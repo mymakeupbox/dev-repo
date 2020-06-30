@@ -10,11 +10,12 @@ const ResponseHelper = require("./utils/ResponseHelper");
 const User = require("./models/User");
 const moment = require("moment");
 const warmer = require('lambda-warmer');
+var randomstring = require("randomstring");
 
 
 const ResourcesEnum = {
   USER: {
-    RETRIEVE_USER: "/user/getUserById",
+    RETRIEVE_USER: "/v1/user/getUserById",
     CHECK_SUBSCRIBER: "/user/checkSubscriberById",
     UPDATE_SUBSCRIBER: "/user/updateSubscriber",
     GET_PURCHASES: "/user/getPurchases",
@@ -66,7 +67,14 @@ exports.handler = async (event, context) => {
 
   if (await warmer(event)) return 'warmed';
 
-  var apiRequestId = event.requestContext.requestId;
+  var apiRequestId;
+
+  try {
+    apiRequestId = event.requestContext.requestId;
+  } catch (error) {
+    apiRequestId = randomstring.generate();
+  }
+
   //var lambdaRequestId = context.awsRequestId;
 
   // Create a logger based on the lambdaRequestId header value
@@ -78,7 +86,7 @@ exports.handler = async (event, context) => {
   const responseHelper = new ResponseHelper(event, loggingHelper);
 
   // based on the resource i.e. /retrieveUser do some logic
-  switch (event.path) {
+  switch (event.requestPath) {
 
 
     //-----------
@@ -87,8 +95,8 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.DIALOG.GET_DIALOG_BY_TAG:
 
     try {
-      const tagId = event.queryStringParameters.tagId;
-      const userId = event.queryStringParameters.userId;
+      const tagId = event.query.tagId;
+      const userId = event.query.userId;
 
       // Get a new instance of the database controller and call the add new interaction handler.
       const response = await DIALOG_DYNAMO_CONTROLLER.getInstance(
@@ -131,7 +139,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.FAVOURITE.GET_FAVOURITES_BY_ID:
 
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and call the add new interaction handler.
         const response = await FAVOURITE_DYNAMO_CONTROLLER.getInstance(
@@ -178,8 +186,8 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.INTERACTION_HISTORY.GET_INTERACTIONS_BY_ID:
 
       try {
-        const userId = event.queryStringParameters.userId;
-        const eventType = event.queryStringParameters.eventType;
+        const userId = event.query.userId;
+        const eventType = event.query.eventType;
 
         // Get a new instance of the database controller and call the add new interaction handler.
         const response = await INTERACTION_HISTORY_DYNAMO_CONTROLLER.getInstance(
@@ -222,7 +230,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.PURCHASES.GET_LATEST_PURCHASE_BY_USERID:
 
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and call the add new interaction handler.
         const response = await PURCHASES_DYNAMO_CONTROLLER.getInstance(
@@ -246,7 +254,7 @@ exports.handler = async (event, context) => {
       // process the API call to /retrieveUser
     case ResourcesEnum.USER.RETRIEVE_USER:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -264,7 +272,7 @@ exports.handler = async (event, context) => {
       // Check if the user is subscribe or not
     case ResourcesEnum.USER.CHECK_SUBSCRIBER:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -283,7 +291,7 @@ exports.handler = async (event, context) => {
       // Get purchases for user Id
     case ResourcesEnum.USER.GET_PURCHASES:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -307,7 +315,7 @@ exports.handler = async (event, context) => {
 
         console.log("request = ", request);
 
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -348,7 +356,7 @@ exports.handler = async (event, context) => {
 
     case ResourcesEnum.USER.GET_USER_TOOLS:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -367,7 +375,7 @@ exports.handler = async (event, context) => {
 
     case ResourcesEnum.USER.ADD_NEW_USER_TOOL:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
         const request = JSON.parse(event.body);
 
         // Get a new instance of the database controller and then add a new user.
@@ -388,7 +396,7 @@ exports.handler = async (event, context) => {
       // Add a new user
     case ResourcesEnum.USER.ADD_SKIN_TONE:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
         const request = JSON.parse(event.body);
 
         console.log("request = ", request);
@@ -410,7 +418,7 @@ exports.handler = async (event, context) => {
 
     case ResourcesEnum.USER.ADD_EYE_SHAPE:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
         const request = JSON.parse(event.body);
 
         console.log("request = ", request);
@@ -433,7 +441,7 @@ exports.handler = async (event, context) => {
       // Update the usage count of the user
     case ResourcesEnum.USER.UPDATE_USAGE_COUNT:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and update the usage count
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -453,7 +461,7 @@ exports.handler = async (event, context) => {
       // Get the user level 
     case ResourcesEnum.USER.GET_USER_LEVEL:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
 
         // Get a new instance of the database controller and update the usage count
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -476,7 +484,7 @@ exports.handler = async (event, context) => {
        */
     case ResourcesEnum.USER.USER_LOGIN:
       try {
-        const userId = event.queryStringParameters.userId;
+        const userId = event.query.userId;
         const request = JSON.parse(event.body);
 
         //The update streak

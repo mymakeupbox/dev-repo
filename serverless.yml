@@ -23,7 +23,8 @@ org: mymakeupbox
 provider:
   name: aws
   runtime: nodejs10.x
-  
+  stage: ${opt:stage, 'dev'}
+
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
@@ -45,10 +46,21 @@ provider:
 #            - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  environment:
+    USERS_TABLE: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}
+    USERS_INDEX: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
 
 # you can add packaging information here
+package:
+  exclude:
+    - node_modules/**
+  excludeDevDependencies: false
+  individually: true
+
+plugins:
+  - serverless-plugin-include-dependencies
+  - serverless-plugin-common-excludes
+
 #package:
 #  include:
 #    - include-me.js
@@ -58,8 +70,19 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  index:
+    handler: index.handler
+    name: ${self:service}-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    events:
+      - http:
+          path: /v1/user/getUserById
+          method: get
+          cors: true
+          integration: lambda
+
+
+
 
 
 #    The following are a few example events you can configure
@@ -113,3 +136,30 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+resources: # CloudFormation template syntax
+  Resources:
+    userTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+        - IndexName: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
+          KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
