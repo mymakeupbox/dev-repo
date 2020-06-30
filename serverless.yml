@@ -23,7 +23,6 @@ org: mymakeupbox
 provider:
   name: aws
   runtime: nodejs10.x
-  
 
 # you can overwrite defaults here
 #  stage: dev
