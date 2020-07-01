@@ -30,8 +30,16 @@ provider:
 #  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:Scan*
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-user-${opt:stage, self:provider.stage, 'dev'}/index/${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
 #      Action:
 #        - "s3:ListBucket"
 #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
@@ -60,6 +68,7 @@ package:
 plugins:
   - serverless-plugin-include-dependencies
   - serverless-plugin-common-excludes
+  - serverless-pseudo-parameters
 
 #package:
 #  include:
@@ -153,13 +162,3 @@ resources: # CloudFormation template syntax
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        GlobalSecondaryIndexes:
-        - IndexName: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
-          KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1

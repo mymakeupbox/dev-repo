@@ -261,7 +261,7 @@ exports.handler = async (event, context) => {
           loggingHelper
         ).getUserById(userId);
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, JSON.stringify(response).replace(/\\/g, ""))
         );
       } catch (err) {
         // return an error if anythin in the try block fails
