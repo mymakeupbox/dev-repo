@@ -16,32 +16,32 @@ var randomstring = require("randomstring");
 const ResourcesEnum = {
   USER: {
     RETRIEVE_USER: "/v1/user/getUserById",
-    CHECK_SUBSCRIBER: "/user/checkSubscriberById",
-    UPDATE_SUBSCRIBER: "/user/updateSubscriber",
-    GET_PURCHASES: "/user/getPurchases",
-    ADD_NEW_USER: "/user/addNewUser",
-    GET_USER_TOOLS: "/user/getUserTools",
-    ADD_NEW_USER_TOOL: "/user/addNewUserTool",
-    ADD_SKIN_TONE: "/user/addSkinTone",
-    ADD_EYE_SHAPE: "/user/addEyeShape",
-    UPDATE_USAGE_COUNT: "/user/updateUsageCount",
-    USER_LOGIN: "/user/userLogin",
-    GET_USER_LEVEL: "/user/getUserLevel"
+    CHECK_SUBSCRIBER: "/v1/user/checkSubscriberById",
+    UPDATE_SUBSCRIBER: "/v1/user/updateSubscriber",
+    GET_PURCHASES: "/v1/user/getPurchases",
+    ADD_NEW_USER: "/v1/user/addNewUser",
+    GET_USER_TOOLS: "/v1/user/getUserTools",
+    ADD_NEW_USER_TOOL: "/v1/user/addNewUserTool",
+    ADD_SKIN_TONE: "/v1/user/addSkinTone",
+    ADD_EYE_SHAPE: "/v1/user/addEyeShape",
+    UPDATE_USAGE_COUNT: "/v1/user/updateUsageCount",
+    USER_LOGIN: "/v1/user/userLogin",
+    GET_USER_LEVEL: "/v1/user/getUserLevel"
   },
   PURCHASES: {
-    ADD_NEW_PURCHASE: "/purchases/addNewPurchase",
-    GET_LATEST_PURCHASE_BY_USERID: "/purchases/getLatestPurchaseByUserId"
+    ADD_NEW_PURCHASE: "/v1/purchases/addNewPurchase",
+    GET_LATEST_PURCHASE_BY_USERID: "/v1/purchases/getLatestPurchaseByUserId"
   },
   INTERACTION_HISTORY: {
-    ADD_NEW_INTERACTION: "/interaction/addNewInteraction",
-    GET_INTERACTIONS_BY_ID: "/interaction/getInteractionsByUserId"
+    ADD_NEW_INTERACTION: "/v1/interaction/addNewInteraction",
+    GET_INTERACTIONS_BY_ID: "/v1/interaction/getInteractionsByUserId"
   },
   FAVOURITE: {
     ADD_NEW_FAVOURITE: "/favourite/addNewFavourite",
     GET_FAVOURITES_BY_ID: "/favourite/getFavouritesByUserId"
   },
   DIALOG:{
-    GET_DIALOG_BY_TAG: "/dialog/getDialogByTag"
+    GET_DIALOG_BY_TAG: "/v1/dialog/getDialogByTag"
   }
 };
 
@@ -104,7 +104,7 @@ exports.handler = async (event, context) => {
       ).getDialogByTag(userId,tagId);
 
       return responseHelper.getSuccessfulResponse(
-        new Response(HttpCodesEnum.OK, JSON.stringify(response))
+        new Response(HttpCodesEnum.OK, response)
       );
     } catch (err) {
       // return an error if anythin in the try block fails
@@ -119,7 +119,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.FAVOURITE.ADD_NEW_FAVOURITE:
 
       try {
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         // Get a new instance of the database controller and call the add new interaction handler.
         const response = await FAVOURITE_DYNAMO_CONTROLLER.getInstance(
@@ -127,7 +127,7 @@ exports.handler = async (event, context) => {
         ).addNewFavourite(request);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -147,7 +147,7 @@ exports.handler = async (event, context) => {
         ).getFavouritesByUserId(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -163,7 +163,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.INTERACTION_HISTORY.ADD_NEW_INTERACTION:
 
       try {
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         // Get a new instance of the database controller and call the add new interaction handler.
         const response = await INTERACTION_HISTORY_DYNAMO_CONTROLLER.getInstance(
@@ -171,7 +171,7 @@ exports.handler = async (event, context) => {
         ).addNewInteraction(request);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -195,7 +195,7 @@ exports.handler = async (event, context) => {
         ).getInteractionsByUserId(userId, eventType);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -210,14 +210,14 @@ exports.handler = async (event, context) => {
       // Add new purchase
     case ResourcesEnum.PURCHASES.ADD_NEW_PURCHASE:
       try {
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await PURCHASES_DYNAMO_CONTROLLER.getInstance(
           loggingHelper
         ).addNewPurchase(request);
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -238,7 +238,7 @@ exports.handler = async (event, context) => {
         ).getLatestPurchaseByUserId(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -261,7 +261,7 @@ exports.handler = async (event, context) => {
           loggingHelper
         ).getUserById(userId);
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response).replace(/\\/g, ""))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -280,7 +280,7 @@ exports.handler = async (event, context) => {
         ).checkSubscriber(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -299,7 +299,7 @@ exports.handler = async (event, context) => {
         ).getPurchases(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -311,11 +311,12 @@ exports.handler = async (event, context) => {
       //  Update the subscriber flag
     case ResourcesEnum.USER.UPDATE_SUBSCRIBER:
       try {
-        const request = JSON.parse(event.body);
-
-        console.log("request = ", request);
+        const request = event.body;
 
         const userId = event.query.userId;
+
+        console.log('.....request ', request);
+        
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -323,7 +324,7 @@ exports.handler = async (event, context) => {
         ).updateSubscriber(userId, request.subscriberFlag);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -335,9 +336,7 @@ exports.handler = async (event, context) => {
       // Add a new user
     case ResourcesEnum.USER.ADD_NEW_USER:
       try {
-        const request = JSON.parse(event.body);
-
-        console.log("request = ", request);
+        const request = event.body;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -345,7 +344,7 @@ exports.handler = async (event, context) => {
         ).addNewUser(request);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -364,7 +363,7 @@ exports.handler = async (event, context) => {
         ).getUserTools(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -376,7 +375,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.USER.ADD_NEW_USER_TOOL:
       try {
         const userId = event.query.userId;
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -384,7 +383,7 @@ exports.handler = async (event, context) => {
         ).addNewUserTool(userId, request.toolId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -397,7 +396,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.USER.ADD_SKIN_TONE:
       try {
         const userId = event.query.userId;
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         console.log("request = ", request);
 
@@ -407,7 +406,7 @@ exports.handler = async (event, context) => {
         ).addSkinTone(userId, request.skinTone);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -419,9 +418,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.USER.ADD_EYE_SHAPE:
       try {
         const userId = event.query.userId;
-        const request = JSON.parse(event.body);
-
-        console.log("request = ", request);
+        const request = event.body;
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
@@ -429,7 +426,7 @@ exports.handler = async (event, context) => {
         ).addEyeShape(userId, request.eyeShape);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -449,7 +446,7 @@ exports.handler = async (event, context) => {
         ).updateUsageCount(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -469,7 +466,7 @@ exports.handler = async (event, context) => {
         ).getUserLevel(userId);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails
@@ -485,7 +482,7 @@ exports.handler = async (event, context) => {
     case ResourcesEnum.USER.USER_LOGIN:
       try {
         const userId = event.query.userId;
-        const request = JSON.parse(event.body);
+        const request = event.body;
 
         //The update streak
         let updateStreak = false;
@@ -517,7 +514,7 @@ exports.handler = async (event, context) => {
         ).userLogin(userId, updateStreak, request.currentTimeStamp);
 
         return responseHelper.getSuccessfulResponse(
-          new Response(HttpCodesEnum.OK, JSON.stringify(response))
+          new Response(HttpCodesEnum.OK, response)
         );
       } catch (err) {
         // return an error if anythin in the try block fails

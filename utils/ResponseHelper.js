@@ -71,10 +71,13 @@ module.exports =  class ResponseHelper {
     
     getSuccessfulResponse(response) {
         this.loggingHelper.info(`getSuccessfulResponse - sending Successful response`, ResponseHelper.name, { finalStatus: AppCodes.S0001, response });
+        console.log(response.response);
+        
+        
         return {
             statusCode: response.statusCode,
             headers: this.getHeaders(),
-            body: response.response.replace("\\","")
+            body: response.response
         };
     }
 }
