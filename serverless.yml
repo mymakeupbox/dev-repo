@@ -45,7 +45,17 @@ provider:
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}/index/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-dialog-${opt:stage, self:provider.stage, 'dev'}
-        #      Action:
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-purchases-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
+#   Allows the cloud watch scheduled event to keep the lambda warm 
+#   needs permission to invoke lambdas (itself)
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: '*'
+#      Action:
 #        - "s3:ListBucket"
 #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
 #    - Effect: "Allow"
@@ -65,6 +75,10 @@ provider:
     TOOLS_TABLE: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}
     TOOLS_INDEX: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
     DIALOG_TABLE: ${self:service}-dialog-${opt:stage, self:provider.stage, 'dev'}
+    PURCHASES_TABLE: ${self:service}-purchases-${opt:stage, self:provider.stage, 'dev'}
+    FAVOURITE_TABLE: ${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
+    INTERACTION_TABLE: ${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
+    ROUTINE_TABLE: ${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
 # you can add packaging information here
 package:
   exclude:
@@ -91,7 +105,7 @@ functions:
     name: ${self:service}-user-handler-${opt:stage, self:provider.stage, 'dev'}
     memorySize: 256 # memorySize for this specific function.
     timeout: 10
-    description: user lambda function
+    description: User lambda function
     events:
       - http:
           path: /v1/user/getUserById
@@ -153,6 +167,57 @@ functions:
           method: get
           cors: true
           integration: lambda
+  purchases:
+    handler: index.handler
+    name: ${self:service}-purchases-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Purchases lambda function
+    events:
+      - http:
+          path: /v1/purchases/addNewPurchase
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/purchases/getLatestPurchaseByUserId
+          method: get
+          cors: true
+          integration: lambda
+  interactionHistory:
+    handler: index.handler
+    name: ${self:service}-interactionHistory-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Interaction history lambda function
+    events:
+      - http:
+          path: /v1/interaction/addNewInteraction
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/interaction/getInteractionsByUserId
+          method: get
+          cors: true
+          integration: lambda
+  favourite:
+    handler: index.handler
+    name: ${self:service}-favourite-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Favourite lambda function
+    events:
+      - http:
+          path: /v1/favourite/addNewFavourite
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/favourite/getFavouritesByUserId
+          method: get
+          cors: true
+          integration: lambda
   dialog:
     handler: index.handler
     name: ${self:service}-dialog-handler-${opt:stage, self:provider.stage, 'dev'}
@@ -165,10 +230,18 @@ functions:
           method: get
           cors: true
           integration: lambda
-
-
-
-
+  routine:
+    handler: index.handler
+    name: ${self:service}-routine-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Routine lambda function
+    events:
+      - http:
+          path: /v1/routine/getRoutineByTag
+          method: post
+          cors: true
+          integration: lambda
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -224,6 +297,74 @@ functions:
 
 resources: # CloudFormation template syntax
   Resources:
+    routineTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: routineId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: routineId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    favouriteTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N  
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    interactionHistoryTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N  
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    purchasesTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-purchases-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N  
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
     dialogTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -240,8 +381,8 @@ resources: # CloudFormation template syntax
           - AttributeName: level
             KeyType: RANGE
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
     userTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -254,8 +395,8 @@ resources: # CloudFormation template syntax
           - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
     toolsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -268,8 +409,8 @@ resources: # CloudFormation template syntax
           - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
         GlobalSecondaryIndexes:
         - IndexName: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
           KeySchema:
