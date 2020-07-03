@@ -4,6 +4,7 @@ const PURCHASES_DYNAMO_CONTROLLER = require("./controller/purchases/DynamoContro
 const INTERACTION_HISTORY_DYNAMO_CONTROLLER = require("./controller/interactionHistory/DynamoController");
 const FAVOURITE_DYNAMO_CONTROLLER = require("./controller/favourite/DynamoController");
 const DIALOG_DYNAMO_CONTROLLER = require("./controller/dialog/DynamoController");
+const ROUTINE_DYNAMO_CONTROLLER = require("./controller/routine/DynamoController");
 const Response = require("./models/Response");
 const LoggingHelper = require("./utils/LoggingHelper");
 const ResponseHelper = require("./utils/ResponseHelper");
@@ -37,11 +38,14 @@ const ResourcesEnum = {
     GET_INTERACTIONS_BY_ID: "/v1/interaction/getInteractionsByUserId"
   },
   FAVOURITE: {
-    ADD_NEW_FAVOURITE: "/favourite/addNewFavourite",
-    GET_FAVOURITES_BY_ID: "/favourite/getFavouritesByUserId"
+    ADD_NEW_FAVOURITE: "/v1/favourite/addNewFavourite",
+    GET_FAVOURITES_BY_ID: "/v1/favourite/getFavouritesByUserId"
   },
-  DIALOG:{
+  DIALOG: {
     GET_DIALOG_BY_TAG: "/v1/dialog/getDialogByTag"
+  },
+  ROUTINE: {
+    GET_ROUTINE_BY_TAG: "/v1/routine/getRoutineByTag"
   }
 };
 
@@ -90,32 +94,54 @@ exports.handler = async (event, context) => {
 
 
     //-----------
-    // DIALOG
+    // Routine
     //-----------
+    case ResourcesEnum.ROUTINE.GET_ROUTINE_BY_TAG:
+
+      try {
+        const request = event.body;
+
+        // Get a new instance of the database controller and call the add new interaction handler.
+        const response = await ROUTINE_DYNAMO_CONTROLLER.getInstance(
+          loggingHelper
+        ).getRoutineByTag(request.tagIds);
+
+        return responseHelper.getSuccessfulResponse(
+          new Response(HttpCodesEnum.OK, response)
+        );
+      } catch (err) {
+        // return an error if anythin in the try block fails
+        return responseHelper.getErrorResponse(err);
+      }
+      break;
+
+      //-----------
+      // DIALOG
+      //-----------
     case ResourcesEnum.DIALOG.GET_DIALOG_BY_TAG:
 
-    try {
-      const tagId = event.query.tagId;
-      const userId = event.query.userId;
+      try {
+        const tagId = event.query.tagId;
+        const userId = event.query.userId;
 
-      // Get a new instance of the database controller and call the add new interaction handler.
-      const response = await DIALOG_DYNAMO_CONTROLLER.getInstance(
-        loggingHelper
-      ).getDialogByTag(userId,tagId);
+        // Get a new instance of the database controller and call the add new interaction handler.
+        const response = await DIALOG_DYNAMO_CONTROLLER.getInstance(
+          loggingHelper
+        ).getDialogByTag(userId, tagId);
 
-      return responseHelper.getSuccessfulResponse(
-        new Response(HttpCodesEnum.OK, response)
-      );
-    } catch (err) {
-      // return an error if anythin in the try block fails
-      return responseHelper.getErrorResponse(err);
-    }
-    break;
+        return responseHelper.getSuccessfulResponse(
+          new Response(HttpCodesEnum.OK, response)
+        );
+      } catch (err) {
+        // return an error if anythin in the try block fails
+        return responseHelper.getErrorResponse(err);
+      }
+      break;
 
 
-    //-----------
-    // FAVOURITE
-    //-----------
+      //-----------
+      // FAVOURITE
+      //-----------
     case ResourcesEnum.FAVOURITE.ADD_NEW_FAVOURITE:
 
       try {
@@ -316,7 +342,7 @@ exports.handler = async (event, context) => {
         const userId = event.query.userId;
 
         console.log('.....request ', request);
-        
+
 
         // Get a new instance of the database controller and then add a new user.
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
