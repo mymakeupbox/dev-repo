@@ -23,14 +23,29 @@ org: mymakeupbox
 provider:
   name: aws
   runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:Scan*
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-user-${opt:stage, self:provider.stage, 'dev'}/index/${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-user-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}/index/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-dialog-${opt:stage, self:provider.stage, 'dev'}
+        #      Action:
 #        - "s3:ListBucket"
 #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
 #    - Effect: "Allow"
@@ -44,10 +59,24 @@ provider:
 #            - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
+  environment:
+    USERS_TABLE: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}
+    USERS_INDEX: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}-index
+    TOOLS_TABLE: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}
+    TOOLS_INDEX: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
+    DIALOG_TABLE: ${self:service}-dialog-${opt:stage, self:provider.stage, 'dev'}
 # you can add packaging information here
+package:
+  exclude:
+    - node_modules/**
+  excludeDevDependencies: false
+  individually: true
+
+plugins:
+  - serverless-plugin-include-dependencies
+  - serverless-plugin-common-excludes
+  - serverless-pseudo-parameters
+
 #package:
 #  include:
 #    - include-me.js
@@ -57,8 +86,88 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  index:
+    handler: index.handler
+    name: ${self:service}-user-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: user lambda function
+    events:
+      - http:
+          path: /v1/user/getUserById
+          method: get
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/checkSubscriberById
+          method: get
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/updateSubscriber
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/getPurchases
+          method: get
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/addNewUser
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/getUserTools
+          method: get
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/addNewUserTool
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/addSkinTone
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/addEyeShape
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/updateUsageCount
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/userLogin
+          method: post
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/user/getUserLevel
+          method: get
+          cors: true
+          integration: lambda
+  dialog:
+    handler: index.handler
+    name: ${self:service}-dialog-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Dialog lambda function
+    events:
+      - http:
+          path: /v1/dialog/getDialogByTag
+          method: get
+          cors: true
+          integration: lambda
+
+
+
 
 
 #    The following are a few example events you can configure
@@ -112,3 +221,62 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+resources: # CloudFormation template syntax
+  Resources:
+    dialogTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-dialog-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: tag
+            AttributeType: S
+          - AttributeName: level
+            AttributeType: N  
+        KeySchema:
+          - AttributeName: tag
+            KeyType: HASH
+          - AttributeName: level
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    userTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-user-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    toolsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+        - IndexName: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
+          KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
