@@ -1,8 +1,7 @@
 const DocumentClient = require("aws-sdk").DynamoDB.DocumentClient;
-//const DocumentClient = require("aws-sdk/lib/dynamodb/document_client");
 const _ = require('lodash');
 
-// Users
+// Routine table - defined in the serverless.yml
 const ROUTINE_TABLE = process.env.ROUTINE_TABLE || "";
 
 
@@ -22,6 +21,7 @@ module.exports = class DynamoDAO {
 
     this.loggingHelper.info("called getRoutineByTag ", tagIds);
 
+    let response;
 
     var params = {
       TableName: ROUTINE_TABLE
@@ -30,15 +30,16 @@ module.exports = class DynamoDAO {
     this.dynamo.scan(params, function(err, data) {
       if (err) {
         console.log("Error", err);
+        return response;
       } else {
         //console.log("Success", data.Items);
         data.Items.forEach(function(element, index, array) {
           console.log(element);
         });
+
+        return response;
       }
     });
-
-    let response;
 
 
     //let response = await this.dynamo.scan(params).promise();
@@ -90,8 +91,6 @@ module.exports = class DynamoDAO {
     // };
     // Scan for the item in the user-id-index
     //let response = await this.dynamo.scan(params).promise();
-
-    return response;
   }
 
 };
