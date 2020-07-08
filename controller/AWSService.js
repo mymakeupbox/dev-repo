@@ -1,5 +1,7 @@
 const { Lambda, SNS, CloudWatch } = require('aws-sdk');
 const RequestError = require('../models/RequestError');
+const { Client } = require('@elastic/elasticsearch')
+const client = new Client({ node: process.env.ES_HOST })
 
 
 
@@ -7,6 +9,7 @@ const RequestError = require('../models/RequestError');
 const SMS_SUBJECT = process.env.SMS_SUBJECT;
 const ENVIRONMENT = process.env.ENVIRONMENT;
 const REGION = process.env.REGION;
+const INDEX_NAME = process.env.INDEX_NAME;
 
 module.exports = class AWSService {
 
@@ -89,5 +92,24 @@ module.exports = class AWSService {
             Namespace: 'userQueue'
         };
         return this.cloudWatch.putMetricData(params).promise();
+    }
+
+    // search the index
+    async searchElasticSearch(){
+
+        await client.indices.refresh({ index: INDEX_NAME});
+
+        // Let's search!
+        const { body } = await client.search({
+            index: INDEX_NAME,
+            body: {
+                query: {
+                    match: { quote: 'winter' }
+                }
+            }
+        })
+
+  console.log(body.hits.hits)
+
     }
 };
