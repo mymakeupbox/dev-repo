@@ -80,6 +80,8 @@ provider:
     FAVOURITE_TABLE: ${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
     INTERACTION_TABLE: ${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
     ROUTINE_TABLE: ${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
+    ES_HOST: 'https://vpc-makeupbox-a56kjpmncpvcac4zqy3br65ije.us-east-1.es.amazonaws.com:443'
+    INDEX_NAME: routines
 # you can add packaging information here
 package:
   exclude:
@@ -309,9 +311,7 @@ resources: # CloudFormation template syntax
         KeySchema:
           - AttributeName: routineId
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     favouriteTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -327,9 +327,7 @@ resources: # CloudFormation template syntax
             KeyType: HASH
           - AttributeName: timestamp
             KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     interactionHistoryTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -345,9 +343,7 @@ resources: # CloudFormation template syntax
             KeyType: HASH
           - AttributeName: timestamp
             KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     purchasesTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -363,9 +359,7 @@ resources: # CloudFormation template syntax
             KeyType: HASH
           - AttributeName: timestamp
             KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     dialogTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -381,9 +375,7 @@ resources: # CloudFormation template syntax
             KeyType: HASH
           - AttributeName: level
             KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     userTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -395,9 +387,7 @@ resources: # CloudFormation template syntax
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
     toolsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
@@ -409,9 +399,7 @@ resources: # CloudFormation template syntax
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        BillingMode: PAY_PER_REQUEST
         GlobalSecondaryIndexes:
         - IndexName: ${self:service}-usertools-${opt:stage, self:provider.stage, 'dev'}-index
           KeySchema:
@@ -419,6 +407,3 @@ resources: # CloudFormation template syntax
             KeyType: HASH
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
