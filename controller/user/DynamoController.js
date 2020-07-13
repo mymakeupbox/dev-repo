@@ -22,6 +22,7 @@ module.exports = class DynamoController {
 
     async getUserById(id) {
         this.loggingHelper.info('Getting user details by id', id);
+
         return this.dynamoDao.getUserById(id);
     }
     async getUserLevel(id) {

@@ -45,7 +45,8 @@ const ResourcesEnum = {
     GET_DIALOG_BY_TAG: "/v1/dialog/getDialogByTag"
   },
   ROUTINE: {
-    GET_ROUTINE_BY_TAG: "/v1/routine/getRoutineByTag"
+    GET_ROUTINE_BY_TAG: "/v1/routine/getRoutineByTag",
+    GET_ALL_ROUTINES: "/v1/routine/getAllRoutines"
   }
 };
 
@@ -114,6 +115,22 @@ exports.handler = async (event, context) => {
         return responseHelper.getErrorResponse(err);
       }
       break;
+
+
+      case ResourcesEnum.ROUTINE.GET_ALL_ROUTINES:
+
+        try{
+
+          // Get a new instance of the database controller and call the add new interaction handler.
+          const response = await ROUTINE_DYNAMO_CONTROLLER.getInstance(loggingHelper).getAllRoutines();
+
+          return responseHelper.getSuccessfulResponse(
+            new Response(HttpCodesEnum.OK, response)
+          );
+
+        } catch (err){
+          return responseHelper.getErrorResponse(err);
+        }
 
       //-----------
       // DIALOG
@@ -286,6 +303,7 @@ exports.handler = async (event, context) => {
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
           loggingHelper
         ).getUserById(userId);
+
         return responseHelper.getSuccessfulResponse(
           new Response(HttpCodesEnum.OK, response)
         );
