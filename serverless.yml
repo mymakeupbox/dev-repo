@@ -23,6 +23,7 @@ org: mymakeupbox
 
 provider:
   name: aws
+  managedPolicyArns: 'arn:aws:iam::287398373860:policy/access-to-elastic-search'
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
 
@@ -93,6 +94,7 @@ plugins:
   - serverless-plugin-include-dependencies
   - serverless-plugin-common-excludes
   - serverless-pseudo-parameters
+  - serverless-attach-managed-policy
 
 #package:
 #  include:
@@ -103,7 +105,7 @@ plugins:
 #    - exclude-me-dir/**
 
 functions:
-  index:
+  user:
     handler: index.handler
     name: ${self:service}-user-handler-${opt:stage, self:provider.stage, 'dev'}
     memorySize: 256 # memorySize for this specific function.
@@ -242,7 +244,12 @@ functions:
     events:
       - http:
           path: /v1/routine/getRoutineByTag
-          method: post
+          method: get
+          cors: true
+          integration: lambda
+      - http:
+          path: /v1/routine/getAllRoutines
+          method: get
           cors: true
           integration: lambda
 

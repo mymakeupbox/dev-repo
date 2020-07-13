@@ -28,7 +28,16 @@ module.exports = class DynamoController {
     async getRoutineByTag(tagIds){
         this.loggingHelper.info('get the routine and associated demos', tagIds);
         return this.dynamoDao.getRoutineByTag(tagIds);
-    }
+    }; // getRoutineByTag
+
+    /**
+     * getAllRoutines
+     * Get all routine names and ids
+     */
+    async getAllRoutines(){
+        this.loggingHelper.info('Get all routines names and IDs');
+        return this.dynamoDao.getAllRoutines();
+    }; // getAllRoutines
     
 
 }

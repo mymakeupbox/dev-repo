@@ -56,9 +56,6 @@ module.exports = class DynamoDAO {
     // Scan for the item in the user-id-index
     let response = await this.dynamo.query(params).promise();
 
-    console.log(JSON.stringify(response));
-    
-
     return response;
   }
 

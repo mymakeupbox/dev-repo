@@ -96,20 +96,22 @@ module.exports = class AWSService {
 
     // search the index
     async searchElasticSearch(){
-
-        await client.indices.refresh({ index: INDEX_NAME});
-
-        // Let's search!
-        const { body } = await client.search({
+        console.log('> searchElasticSearch');
+        console.log('... index name:', INDEX_NAME);
+        
+        const response = await client.search({
             index: INDEX_NAME,
+            // filter the source to only include the quote field
+            //_source: ['quote'],
             body: {
-                query: {
-                    match: { quote: 'winter' }
+                query: {    
+                    match_all: {}
                 }
             }
-        })
+        });
+        
+        console.log('.....-',JSON.stringify(response.body.hits.hits));
 
-  console.log(body.hits.hits)
-
+        return JSON.stringify(response.body.hits.hits);
     }
 };
