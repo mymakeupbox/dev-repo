@@ -1,4 +1,5 @@
 const DocumentClient = require("aws-sdk").DynamoDB.DocumentClient;
+const AWSService = require('../../controller/AWSService');
 const _ = require('lodash');
 
 // Routine table - defined in the serverless.yml
@@ -11,6 +12,7 @@ module.exports = class DynamoDAO {
       apiVersion: '2012-08-10'
     });
     this.loggingHelper = pLoggingHelper;
+    this.awsService = AWSService.getInstance(this.loggingHelper);
   }
 
   /**
@@ -21,25 +23,11 @@ module.exports = class DynamoDAO {
 
     this.loggingHelper.info("called getRoutineByTag ", tagIds);
 
-    let response;
+    let response = await this.awsService.getRoutineByTag(tagIds);
 
-    var params = {
-      TableName: ROUTINE_TABLE
-    };
+    return response;
 
-    this.dynamo.scan(params, function (err, data) {
-      if (err) {
-        console.log("Error", err);
-        return response;
-      } else {
-        //console.log("Success", data.Items);
-        data.Items.forEach(function (element, index, array) {
-          console.log(element);
-        });
-
-        return response;
-      }
-    });
+   
   }; // getRoutineByTag
 
   /**

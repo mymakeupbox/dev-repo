@@ -1,9 +1,8 @@
 const DocumentClient = require("aws-sdk").DynamoDB.DocumentClient;
-//const DocumentClient = require("aws-sdk/lib/dynamodb/document_client");
 const _ = require('lodash');
 
 // Users
-const DIALOG_TABLE = process.env.DIALOG_TABLE || "";
+const DEMO_TABLE = process.env.DEMO_TABLE || "";
 
 
 module.exports = class DynamoDAO {
@@ -15,31 +14,25 @@ module.exports = class DynamoDAO {
   }
 
   /**
-   * getUserById
-   * Get the user record from the database keyed on id
+   * getDemoById
+   * Get the demo record from the database keyed on id
    *
    */
-  async getDialogByTag(tagId, userLevel) {
-    this.loggingHelper.info("--- getDialogByTag ---");
-    this.loggingHelper.info("called getDialogByTag ", tagId);
-    this.loggingHelper.info("userLevel ", userLevel);
+  async getDemoById(demoId) {
+    this.loggingHelper.info("--- getDemoById ---");
+    this.loggingHelper.info("called getDemoById ", demoId);
 
     const params = {
-      TableName: DIALOG_TABLE,
-      KeyConditionExpression: "tag = :tagId",
+      TableName: DEMO_TABLE,
+      KeyConditionExpression: "demoId = :demoId",
       ExpressionAttributeValues: {
-        ":tagId": tagId
+        ":demoId": demoId
       }
     };
     // Scan for the item in the user-id-index
     let response = await this.dynamo.query(params).promise();
 
     console.log('...res=', JSON.stringify(response));
-
-
-    response = _.find(response.Items, {
-      'level': userLevel
-    });
 
     if (typeof response === "undefined") {
       console.log('!NO_RECORDS_FOUND');

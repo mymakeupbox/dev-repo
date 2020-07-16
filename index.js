@@ -5,6 +5,7 @@ const INTERACTION_HISTORY_DYNAMO_CONTROLLER = require("./controller/interactionH
 const FAVOURITE_DYNAMO_CONTROLLER = require("./controller/favourite/DynamoController");
 const DIALOG_DYNAMO_CONTROLLER = require("./controller/dialog/DynamoController");
 const ROUTINE_DYNAMO_CONTROLLER = require("./controller/routine/DynamoController");
+const DEMO_DYNAMO_CONTROLLER = require("./controller/demo/DynamoController");
 const Response = require("./models/Response");
 const LoggingHelper = require("./utils/LoggingHelper");
 const ResponseHelper = require("./utils/ResponseHelper");
@@ -47,6 +48,9 @@ const ResourcesEnum = {
   ROUTINE: {
     GET_ROUTINE_BY_TAG: "/v1/routine/getRoutineByTag",
     GET_ALL_ROUTINES: "/v1/routine/getAllRoutines"
+  },
+  DEMO:{
+    GET_DEMO_BY_ID: "/v1/demo/getDemoById"
   }
 };
 
@@ -93,6 +97,28 @@ exports.handler = async (event, context) => {
   // based on the resource i.e. /retrieveUser do some logic
   switch (event.requestPath) {
 
+
+    //-----------
+    // Demo
+    //-----------
+    case ResourcesEnum.DEMO.GET_DEMO_BY_ID:
+
+      try {
+        const demoId = event.query.demoId;
+
+        // Get a new instance of the database controller and call the add new interaction handler.
+        const response = await DEMO_DYNAMO_CONTROLLER.getInstance(
+          loggingHelper
+        ).getDemoById(demoId);
+
+        return responseHelper.getSuccessfulResponse(
+          new Response(HttpCodesEnum.OK, response)
+        );
+      } catch (err) {
+        // return an error if anythin in the try block fails
+        return responseHelper.getErrorResponse(err);
+      }
+      break;
 
     //-----------
     // Routine
@@ -303,6 +329,8 @@ exports.handler = async (event, context) => {
         const response = await USER_DYNAMO_CONTROLLER.getInstance(
           loggingHelper
         ).getUserById(userId);
+
+        console.log('...> response ', JSON.stringify(response));
 
         return responseHelper.getSuccessfulResponse(
           new Response(HttpCodesEnum.OK, response)

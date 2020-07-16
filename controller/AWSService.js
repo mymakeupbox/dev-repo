@@ -9,7 +9,7 @@ const client = new Client({ node: process.env.ES_HOST })
 const SMS_SUBJECT = process.env.SMS_SUBJECT;
 const ENVIRONMENT = process.env.ENVIRONMENT;
 const REGION = process.env.REGION;
-const INDEX_NAME = process.env.INDEX_NAME;
+const ROUTINES_INDEX_NAME = process.env.ROUTINES_INDEX_NAME;
 
 module.exports = class AWSService {
 
@@ -97,21 +97,43 @@ module.exports = class AWSService {
     // search the index
     async searchElasticSearch(){
         console.log('> searchElasticSearch');
-        console.log('... index name:', INDEX_NAME);
+        console.log('... index name:', ROUTINES_INDEX_NAME);
         
         const response = await client.search({
-            index: INDEX_NAME,
+            index: ROUTINES_INDEX_NAME,
             // filter the source to only include the quote field
             //_source: ['quote'],
+            _source: ["name", "_id"],
             body: {
                 query: {    
                     match_all: {}
                 }
             }
         });
-        
+
         console.log('.....-',JSON.stringify(response.body.hits.hits));
 
-        return JSON.stringify(response.body.hits.hits);
+        return response.body.hits.hits;
+    }
+
+    async getRoutineByTag(tagIds){
+        console.log('...tags =', tagIds);
+        console.log('> awsService - getRoutineByTag');
+        console.log('... index name:', ROUTINES_INDEX_NAME);
+        
+        const response = await client.search({
+            index: ROUTINES_INDEX_NAME,
+            body: {
+                "query" : {
+                    "terms" : {
+                        "tags.keyword": ["VINTAGE", "FRESH"]
+                    }
+                }
+            }
+        });
+
+        console.log('.....-',JSON.stringify(response.body.hits.hits));
+
+        return response.body.hits.hits;
     }
 };

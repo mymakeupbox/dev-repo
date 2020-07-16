@@ -1,4 +1,4 @@
-const DynamoDAO = require('../../data/routine/DynamoDAO');
+const DynamoDAO = require('../../data/demo/DynamoDAO');
 const AWSService = require('../AWSService');
 
 module.exports = class DynamoController {
@@ -21,23 +21,16 @@ module.exports = class DynamoController {
     }
 
     /**
-     * getRoutineByTag
-     * - Get routine by tag
-     * @param {string} tagArray 
+     * getDemoById
+     * get the demo by id
+     * @param {string} demoId
      */
-    async getRoutineByTag(tagIds){
-        this.loggingHelper.info('get the routines by tag', tagIds);
-        return this.dynamoDao.getRoutineByTag(tagIds);
-    }; // getRoutineByTag
+    async getDemoById(demoId){
+        this.loggingHelper.info('demo id = ', demoId);
 
-    /**
-     * getAllRoutines
-     * Get all routine names and ids
-     */
-    async getAllRoutines(){
-        this.loggingHelper.info('Get all routines names and IDs');
-        return this.dynamoDao.getAllRoutines();
-    }; // getAllRoutines
+        return this.dynamoDao.getDemoById(demoId);
+    };
+
     
 
 }

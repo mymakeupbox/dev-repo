@@ -51,6 +51,7 @@ provider:
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
         - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-demo-${opt:stage, self:provider.stage, 'dev'}
 #   Allows the cloud watch scheduled event to keep the lambda warm 
 #   needs permission to invoke lambdas (itself)
     - Effect: Allow
@@ -81,8 +82,9 @@ provider:
     FAVOURITE_TABLE: ${self:service}-favourite-${opt:stage, self:provider.stage, 'dev'}
     INTERACTION_TABLE: ${self:service}-interaction-history-${opt:stage, self:provider.stage, 'dev'}
     ROUTINE_TABLE: ${self:service}-routine-${opt:stage, self:provider.stage, 'dev'}
+    DEMO_TABLE: ${self:service}-demo-${opt:stage, self:provider.stage, 'dev'}
     ES_HOST: 'https://vpc-makeupbox-a56kjpmncpvcac4zqy3br65ije.us-east-1.es.amazonaws.com:443'
-    INDEX_NAME: routines
+    ROUTINES_INDEX_NAME: routines
 # you can add packaging information here
 package:
   exclude:
@@ -115,7 +117,6 @@ functions:
       - http:
           path: /v1/user/getUserById
           method: get
-          cors: true
           integration: lambda
       - http:
           path: /v1/user/checkSubscriberById
@@ -241,14 +242,31 @@ functions:
     memorySize: 256 # memorySize for this specific function.
     timeout: 10
     description: Routine lambda function
+    vpc:
+      securityGroupIds:
+        - sg-71364553
+      subnetIds:
+        - subnet-2b8e0a25
     events:
       - http:
           path: /v1/routine/getRoutineByTag
-          method: get
+          method: post
           cors: true
           integration: lambda
       - http:
           path: /v1/routine/getAllRoutines
+          method: get
+          cors: true
+          integration: lambda
+  demo:
+    handler: index.handler
+    name: ${self:service}-demo-handler-${opt:stage, self:provider.stage, 'dev'}
+    memorySize: 256 # memorySize for this specific function.
+    timeout: 10
+    description: Demo lambda function
+    events:
+      - http:
+          path: /v1/demo/getDemoById
           method: get
           cors: true
           integration: lambda
@@ -317,6 +335,18 @@ resources: # CloudFormation template syntax
             AttributeType: S
         KeySchema:
           - AttributeName: routineId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    demoTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-demo-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: demoId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: demoId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
     favouriteTable:
