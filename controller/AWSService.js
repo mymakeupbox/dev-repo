@@ -1,7 +1,15 @@
-const { Lambda, SNS, CloudWatch } = require('aws-sdk');
+const {
+    Lambda,
+    SNS,
+    CloudWatch
+} = require('aws-sdk');
 const RequestError = require('../models/RequestError');
-const { Client } = require('@elastic/elasticsearch')
-const client = new Client({ node: process.env.ES_HOST })
+const {
+    Client
+} = require('@elastic/elasticsearch')
+const client = new Client({
+    node: process.env.ES_HOST
+});
 
 
 
@@ -28,7 +36,7 @@ module.exports = class AWSService {
     /**
      * getInstance - Returns AWSService instance
      */
-    static getInstance(){
+    static getInstance() {
         if (!this.instance) {
             // Create an instance of this AWSService class and return it
             this.instance = new AWSService();
@@ -95,44 +103,44 @@ module.exports = class AWSService {
     }
 
     // search the index
-    async searchElasticSearch(){
+    async searchElasticSearch() {
         console.log('> searchElasticSearch');
         console.log('... index name:', ROUTINES_INDEX_NAME);
-        
+
         const response = await client.search({
             index: ROUTINES_INDEX_NAME,
             // filter the source to only include the quote field
             //_source: ['quote'],
             _source: ["name", "_id"],
             body: {
-                query: {    
+                query: {
                     match_all: {}
                 }
             }
         });
 
-        console.log('.....-',JSON.stringify(response.body.hits.hits));
+        console.log('.....-', JSON.stringify(response.body.hits.hits));
 
         return response.body.hits.hits;
     }
 
-    async getRoutineByTag(tagIds){
+    async getRoutineByTag(tagIds) {
         console.log('...tags =', tagIds);
         console.log('> awsService - getRoutineByTag');
         console.log('... index name:', ROUTINES_INDEX_NAME);
-        
+
         const response = await client.search({
             index: ROUTINES_INDEX_NAME,
             body: {
-                "query" : {
-                    "terms" : {
+                "query": {
+                    "terms": {
                         "tags.keyword": tagIds
                     }
                 }
             }
         });
 
-        console.log('.....-',JSON.stringify(response.body.hits.hits));
+        console.log('.....-', JSON.stringify(response.body.hits.hits));
 
         return response.body.hits.hits;
     }
