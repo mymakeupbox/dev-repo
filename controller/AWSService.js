@@ -126,7 +126,7 @@ module.exports = class AWSService {
             body: {
                 "query" : {
                     "terms" : {
-                        "tags.keyword": ["VINTAGE", "FRESH"]
+                        "tags.keyword": tagIds
                     }
                 }
             }

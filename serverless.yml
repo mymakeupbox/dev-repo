@@ -85,6 +85,7 @@ provider:
     DEMO_TABLE: ${self:service}-demo-${opt:stage, self:provider.stage, 'dev'}
     ES_HOST: 'https://vpc-makeupbox-a56kjpmncpvcac4zqy3br65ije.us-east-1.es.amazonaws.com:443'
     ROUTINES_INDEX_NAME: routines
+    DEMOS_INDEX_NAME: demos
 # you can add packaging information here
 package:
   exclude:
@@ -264,6 +265,11 @@ functions:
     memorySize: 256 # memorySize for this specific function.
     timeout: 10
     description: Demo lambda function
+    vpc:
+      securityGroupIds:
+        - sg-71364553
+      subnetIds:
+        - subnet-2b8e0a25
     events:
       - http:
           path: /v1/demo/getDemoById
