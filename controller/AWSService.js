@@ -164,7 +164,7 @@ module.exports = class AWSService {
             index: DEMOS_INDEX_NAME,
             body: {
                 "query": {
-                    "terms": {
+                    "term": {
                         "tags.keyword": tagIds
                     }
                 }
