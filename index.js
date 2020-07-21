@@ -15,6 +15,7 @@ const warmer = require('lambda-warmer');
 var randomstring = require("randomstring");
 
 
+// Constants
 const ResourcesEnum = {
   USER: {
     RETRIEVE_USER: "/v1/user/getUserById",
@@ -49,8 +50,9 @@ const ResourcesEnum = {
     GET_ROUTINE_BY_TAG: "/v1/routine/getRoutineByTag",
     GET_ALL_ROUTINES: "/v1/routine/getAllRoutines"
   },
-  DEMO:{
-    GET_DEMO_BY_ID: "/v1/demo/getDemoById"
+  DEMO: {
+    GET_DEMO_BY_ID: "/v1/demo/getDemoById",
+    GET_DEMO_BY_TAG: "/v1/demo/getDemoByTag"
   }
 };
 
@@ -120,9 +122,29 @@ exports.handler = async (event, context) => {
       }
       break;
 
-    //-----------
-    // Routine
-    //-----------
+    case ResourcesEnum.DEMO.GET_DEMO_BY_TAG:
+
+      try {
+        const request = event.body;
+
+        // Get a new instance of the database controller and call the add new interaction handler.
+        const response = await DEMO_DYNAMO_CONTROLLER.getInstance(
+          loggingHelper
+        ).getDemoByTag(request);
+
+        return responseHelper.getSuccessfulResponse(
+          new Response(HttpCodesEnum.OK, response)
+        );
+      } catch (err) {
+        // return an error if anythin in the try block fails
+        return responseHelper.getErrorResponse(err);
+      }
+      break;
+
+
+      //-----------
+      // Routine
+      //-----------
     case ResourcesEnum.ROUTINE.GET_ROUTINE_BY_TAG:
 
       try {
@@ -143,20 +165,20 @@ exports.handler = async (event, context) => {
       break;
 
 
-      case ResourcesEnum.ROUTINE.GET_ALL_ROUTINES:
+    case ResourcesEnum.ROUTINE.GET_ALL_ROUTINES:
 
-        try{
+      try {
 
-          // Get a new instance of the database controller and call the add new interaction handler.
-          const response = await ROUTINE_DYNAMO_CONTROLLER.getInstance(loggingHelper).getAllRoutines();
+        // Get a new instance of the database controller and call the add new interaction handler.
+        const response = await ROUTINE_DYNAMO_CONTROLLER.getInstance(loggingHelper).getAllRoutines();
 
-          return responseHelper.getSuccessfulResponse(
-            new Response(HttpCodesEnum.OK, response)
-          );
+        return responseHelper.getSuccessfulResponse(
+          new Response(HttpCodesEnum.OK, response)
+        );
 
-        } catch (err){
-          return responseHelper.getErrorResponse(err);
-        }
+      } catch (err) {
+        return responseHelper.getErrorResponse(err);
+      }
 
       //-----------
       // DIALOG

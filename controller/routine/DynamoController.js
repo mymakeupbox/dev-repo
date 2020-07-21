@@ -27,7 +27,7 @@ module.exports = class DynamoController {
      */
     async getRoutineByTag(tagIds){
         this.loggingHelper.info('get the routines by tag', tagIds);
-        return this.dynamoDao.getRoutineByTag(tagIds);
+        return this.awsService.getRoutineByTag(tagIds);
     }; // getRoutineByTag
 
     /**
@@ -36,7 +36,7 @@ module.exports = class DynamoController {
      */
     async getAllRoutines(){
         this.loggingHelper.info('Get all routines names and IDs');
-        return this.dynamoDao.getAllRoutines();
+        return this.awsService.searchAllRoutines();
     }; // getAllRoutines
     
 

@@ -18,6 +18,7 @@ const SMS_SUBJECT = process.env.SMS_SUBJECT;
 const ENVIRONMENT = process.env.ENVIRONMENT;
 const REGION = process.env.REGION;
 const ROUTINES_INDEX_NAME = process.env.ROUTINES_INDEX_NAME;
+const DEMOS_INDEX_NAME = process.env.DEMOS_INDEX_NAME;
 
 module.exports = class AWSService {
 
@@ -103,8 +104,8 @@ module.exports = class AWSService {
     }
 
     // search the index
-    async searchElasticSearch() {
-        console.log('> searchElasticSearch');
+    async searchAllRoutines() {
+        console.log('> searchAllRoutines');
         console.log('... index name:', ROUTINES_INDEX_NAME);
 
         const response = await client.search({
@@ -119,11 +120,14 @@ module.exports = class AWSService {
             }
         });
 
-        console.log('.....-', JSON.stringify(response.body.hits.hits));
-
         return response.body.hits.hits;
     }
 
+    /**
+     * [getRoutineByTag description]
+     * @param  {[type]} tagIds [tag array]
+     * @return {[type]}        [json object]
+     */
     async getRoutineByTag(tagIds) {
         console.log('...tags =', tagIds);
         console.log('> awsService - getRoutineByTag');
@@ -143,5 +147,34 @@ module.exports = class AWSService {
         console.log('.....-', JSON.stringify(response.body.hits.hits));
 
         return response.body.hits.hits;
-    }
+    };
+
+
+    /**
+     * [getDemoByTag description]
+     * @param  {[type]} tagIds [tag id arrays]
+     * @return {[type]}        [description]
+     */
+    async getDemoByTag(tagIds) {
+        console.log('...tags =', tagIds);
+        console.log('> awsService - getDemoByTag');
+        console.log('... index name:', DEMOS_INDEX_NAME);
+
+        const response = await client.search({
+            index: DEMOS_INDEX_NAME,
+            body: {
+                "query": {
+                    "terms": {
+                        "tags.keyword": tagIds
+                    }
+                }
+            }
+        });
+
+        console.log(response);
+
+        return response.body.hits.hits;
+    };
+
+
 };

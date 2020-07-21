@@ -29,6 +29,7 @@ module.exports = class DynamoDAO {
         ":demoId": demoId
       }
     };
+
     // Scan for the item in the user-id-index
     let response = await this.dynamo.query(params).promise();
 
@@ -45,6 +46,21 @@ module.exports = class DynamoDAO {
     }
 
     return response;
-  }
+  };
+
+
+  /**
+   * getDemoByTag
+   * Get the demos that have a type of 'S' 
+   */
+  async getDemoByTag(tagIds) {
+
+    this.loggingHelper.info("called getDemoByTag ", tagIds);
+
+    let response = await this.awsService.getDemoByTag(tagIds);
+
+    return response;
+
+  }; // getRoutineByTag
 
 };

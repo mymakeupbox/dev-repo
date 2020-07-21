@@ -276,6 +276,11 @@ functions:
           method: get
           cors: true
           integration: lambda
+      - http:
+          path: /v1/demo/getDemoByTag
+          method: post
+          cors: true
+          integration: lambda
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

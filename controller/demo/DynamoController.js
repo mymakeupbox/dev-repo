@@ -25,12 +25,22 @@ module.exports = class DynamoController {
      * get the demo by id
      * @param {string} demoId
      */
-    async getDemoById(demoId){
+    async getDemoById(demoId) {
         this.loggingHelper.info('demo id = ', demoId);
 
         return this.dynamoDao.getDemoById(demoId);
     };
 
-    
+    /**
+     * getDemoByTag
+     * - Get demo by tag
+     * @param {string} tagArray 
+     */
+    async getDemoByTag(tagIds) {
+        this.loggingHelper.info('get the demo by tag', tagIds);
+        return this.awsService.getDemoByTag(tagIds);
+    }; // getDemoByTag
+
+
 
 }
