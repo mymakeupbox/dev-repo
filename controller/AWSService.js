@@ -156,7 +156,7 @@ module.exports = class AWSService {
      * @return {[type]}        [description]
      */
     async getDemoByTag(tagIds) {
-        console.log('...tags =', tagIds);
+        console.log('...tags =', tagIds.tagIds);
         console.log('> awsService - getDemoByTag');
         console.log('... index name:', DEMOS_INDEX_NAME);
 
@@ -164,8 +164,21 @@ module.exports = class AWSService {
             index: DEMOS_INDEX_NAME,
             body: {
                 "query": {
-                    "term": {
-                        "tags.keyword": tagIds
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "type.keyword": {
+                                        "value": process.env.SEARCHABLE_TYPE
+                                    }
+                                }
+                            },
+                            {
+                                "terms": {
+                                    "tags.keyword": tagIds.tagIds
+                                }
+                            }
+                        ]
                     }
                 }
             }

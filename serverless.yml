@@ -264,7 +264,9 @@ functions:
     name: ${self:service}-demo-handler-${opt:stage, self:provider.stage, 'dev'}
     memorySize: 256 # memorySize for this specific function.
     timeout: 10
-    description: Demo lambda function
+    description: Demo lambda function,
+    environment:
+      SEARCHABLE_TYPE: S
     vpc:
       securityGroupIds:
         - sg-71364553
