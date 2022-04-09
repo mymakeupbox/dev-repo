@@ -13,7 +13,7 @@
     "aws-sdk": "^2.690.0",
     "lambda-warmer": "^1.2.1",
     "lodash": "^4.17.15",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "randomstring": "^1.1.5",
     "serverless-dynamodb-autoscaling": "^0.6.2",
     "uuid": "^7.0.3",
